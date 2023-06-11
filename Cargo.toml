@@ -9,4 +9,5 @@ edition = "2021"
 [dependencies]
 anyhow = "1.0.68"
 scraper = "0.14.0"
+threadpool = "1.8.1"
 url = "2.3.1"
