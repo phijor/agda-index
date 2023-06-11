@@ -18,6 +18,7 @@
           rustPkgs = pkgs.rustBuilder.makePackageSet {
             rustVersion = "1.66.1";
             packageFun = import ./Cargo.nix;
+            extraRustComponents = ["rust-analyzer" "clippy"];
           };
           agda-index = (rustPkgs.workspace.agda-index {}).bin;
         in rec {
