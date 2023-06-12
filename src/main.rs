@@ -2,6 +2,7 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
+mod cmdline;
 mod module;
 
 use crate::module::ModuleParser;
@@ -9,7 +10,6 @@ use crate::module::ModuleParser;
 use anyhow::{Context, Result};
 use module::Module;
 
-use std::env;
 use std::fs;
 use std::path::Path;
 use std::path::PathBuf;
@@ -59,7 +59,9 @@ where
 }
 
 fn main() -> Result<()> {
-    for (path, module) in spawn_workers(env::args_os().skip(1).map(PathBuf::from)) {
+    let cmdline = cmdline::parse();
+
+    for (path, module) in spawn_workers(cmdline.module_paths.into_iter()) {
         let path = fs::canonicalize(path)?;
         for item in module.items {
             println!(
