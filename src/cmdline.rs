@@ -24,13 +24,13 @@ pub enum OutputFormat {
 }
 
 impl FromStr for OutputFormat {
-    type Err = String;
+    type Err = &'static str;
 
     fn from_str(fmt: &str) -> Result<Self, Self::Err> {
         match fmt {
             "plain" => Ok(Self::Plain),
             "json" => Ok(Self::Json),
-            unk => Err(format!(r#"Unknown output format "{unk}""#)),
+            _ => Err("expected one of 'plain' or 'json'"),
         }
     }
 }
