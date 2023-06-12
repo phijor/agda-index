@@ -1,13 +1,38 @@
-use std::path::PathBuf;
+use std::{path::PathBuf, str::FromStr};
 
 use argh::FromArgs;
 
 #[derive(Debug, FromArgs)]
 /// Index top-level definitions found in Agda modules rendered to HTML
 pub struct CommandLine {
+    #[argh(option, default = "OutputFormat::Plain")]
+    /// textual format of the finished index.
+    /// Either
+    /// "plain" (space-separated plaintext, default),
+    /// "json" (JSON dictionary {{<source file>: <module items>}})
+    pub output_format: OutputFormat,
+
     #[argh(positional)]
     /// paths to HTML files containing a rendered Agda modules
     pub module_paths: Vec<PathBuf>,
+}
+
+#[derive(Debug, Clone, Copy)]
+pub enum OutputFormat {
+    Plain,
+    Json,
+}
+
+impl FromStr for OutputFormat {
+    type Err = String;
+
+    fn from_str(fmt: &str) -> Result<Self, Self::Err> {
+        match fmt {
+            "plain" => Ok(Self::Plain),
+            "json" => Ok(Self::Json),
+            unk => Err(format!(r#"Unknown output format "{unk}""#)),
+        }
+    }
 }
 
 /// Parse arguments given on the command line.

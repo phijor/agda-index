@@ -2,10 +2,14 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 //
-use std::path::Path;
+use std::{
+    fmt::{self, Display},
+    path::Path,
+};
 
 use anyhow::{Context, Result};
 use scraper::{ElementRef, Html, Selector};
+use serde::Serialize;
 use url::{self, Url};
 
 #[derive(Debug)]
@@ -120,14 +124,31 @@ impl ModuleParser {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Serialize)]
 pub struct Item {
     pub id: String,
     pub identifier: String,
 }
 
-#[derive(Debug)]
+impl Display for Item {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(
+            f,
+            "{identifier}#{id}",
+            identifier = self.identifier,
+            id = self.id
+        )
+    }
+}
+
+#[derive(Debug, Serialize)]
 pub struct Module {
     pub name: String,
     pub items: Vec<Item>,
+}
+
+impl Display for Module {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        f.write_str(&self.name)
+    }
 }
