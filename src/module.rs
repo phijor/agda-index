@@ -20,7 +20,7 @@ pub struct ModuleParser {
 }
 
 impl ModuleParser {
-    pub fn new(base_url: Url) -> ModuleParser {
+    pub fn new() -> ModuleParser {
         const ITEM_SELECTOR: &str = r"
             .Agda .Function ,
             .Agda .Datatype ,
@@ -32,17 +32,17 @@ impl ModuleParser {
         ModuleParser {
             items: Selector::parse(ITEM_SELECTOR).expect("item selector"),
             title: Selector::parse("html title").expect("title selector"),
-            base_url,
+            base_url: Url::parse("http://invalid./").expect("arbitrary base URL"),
         }
     }
 
-    pub fn from_path(path: &Path) -> Option<ModuleParser> {
-        let base_path = path.parent()?;
+    // pub fn from_path(path: &Path) -> Option<ModuleParser> {
+    //     let base_path = path.parent()?;
 
-        let base_url = Url::parse(&format!("file://{}/", base_path.display())).ok()?;
+    //     let base_url = Url::parse(&format!("file://{}/", base_path.display())).ok()?;
 
-        Some(ModuleParser::new(base_url))
-    }
+    //     Some(ModuleParser::new(base_url))
+    // }
 
     fn parse_target_item(&self, target: &Url) -> Result<(String, String)> {
         let id = target.fragment().context("No target ID")?;

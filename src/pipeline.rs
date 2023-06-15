@@ -45,12 +45,7 @@ impl Pipeline {
 }
 
 fn process_module(source_path: PathBuf, result: mpsc::Sender<Item>) -> Result<()> {
-    let parser = ModuleParser::from_path(&source_path).with_context(|| {
-        format!(
-            "Failed to create module parser for file at {}",
-            source_path.display()
-        )
-    })?;
+    let parser = ModuleParser::new();
 
     let content = std::fs::read_to_string(&source_path)
         .with_context(|| format!("Failed to read module file at {}", source_path.display()))?;
