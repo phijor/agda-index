@@ -1,6 +1,7 @@
 use std::{fmt, io::Write};
 
 use anyhow::{Context, Result};
+use serde::{ser::SerializeSeq, Serialize};
 use serde_json::Serializer;
 
 use crate::{module::Module, pipeline::Output};
@@ -29,15 +30,37 @@ where
     }
 }
 
+#[derive(Serialize)]
+struct IndexItem<'n> {
+    module: &'n str,
+    identifier: String,
+    href: String, // TODO: Extract the proper href from HTML
+}
+
 impl<W> OutputWriter for JsonOutput<W>
 where
     W: Write,
 {
     fn write_output(&mut self, output: Output) -> Result<()> {
         use serde::Serializer;
-        self.serializer
-            .collect_map(output.into_iter())
-            .context("Failed to write JSON output")
+
+        let mut ser = self.serializer.serialize_seq(None)?;
+
+        for item in output {
+            let Module { name, items } = item.module;
+
+            for item in items {
+                ser.serialize_element(&IndexItem {
+                    module: &name,
+                    identifier: item.identifier,
+                    href: format!("{}.html#{}", name, item.id),
+                })?;
+            }
+        }
+
+        ser.end()?;
+
+        Ok(())
     }
 }
 
@@ -59,14 +82,18 @@ where
     fn write_output(&mut self, output: Output) -> Result<()> {
         use std::fs;
 
-        for (path, module) in output.into_iter() {
-            let path = fs::canonicalize(&path)
-                .with_context(|| format!("Failed to canonicalize path {}", &path.display()))?;
+        for item in output.into_iter() {
+            let path = fs::canonicalize(&item.source_path).with_context(|| {
+                format!(
+                    "Failed to canonicalize path {}",
+                    &item.source_path.display()
+                )
+            })?;
 
             let Module {
                 name: module_name,
                 items,
-            } = module;
+            } = item.module;
 
             for item in items {
                 writeln!(

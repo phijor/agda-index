@@ -8,7 +8,11 @@ use threadpool::ThreadPool;
 
 use crate::module::{Module, ModuleParser};
 
-type Item = (PathBuf, Module);
+#[derive(Debug)]
+pub struct Item {
+    pub source_path: PathBuf,
+    pub module: Module,
+}
 
 #[derive(Debug)]
 pub struct Pipeline {
@@ -55,7 +59,10 @@ fn process_module(source_path: PathBuf, result: mpsc::Sender<Item>) -> Result<()
         .with_context(|| format!("Failed to parse module {}", source_path.display()))?;
 
     result
-        .send((source_path, module))
+        .send(Item {
+            source_path,
+            module,
+        })
         .context("Failed to send result")?;
 
     Ok(())
