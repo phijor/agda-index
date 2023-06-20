@@ -60,6 +60,13 @@ impl ModuleParser {
         Ok((id.into(), module.into()))
     }
 
+    fn count_returns_before(elem: ElementRef) -> usize {
+        elem.prev_siblings()
+            .filter_map(|sbl| sbl.value().as_text())
+            .map(|txt| txt.chars().filter(|c| c == &'\n').count())
+            .sum()
+    }
+
     fn parse_item(
         &self,
         item: ElementRef,
@@ -69,6 +76,7 @@ impl ModuleParser {
         let identifier = item.text().next().context("Missing text")?;
         let element = item.value();
         let id = element.id().context("Missing ID")?;
+        let line_no = Self::count_returns_before(item);
         let target_url = match element.attr("href") {
             Some(href) => url_parser.parse(href).context("Invalid link target")?,
             None => {
@@ -81,6 +89,7 @@ impl ModuleParser {
                 return Ok(Some(Item {
                     id: id.into(),
                     identifier: identifier.into(),
+                    line_no,
                 }));
             }
         };
@@ -91,6 +100,7 @@ impl ModuleParser {
             Some(Item {
                 id: id.into(),
                 identifier: identifier.into(),
+                line_no,
             })
         } else {
             None
@@ -128,6 +138,7 @@ impl ModuleParser {
 pub struct Item {
     pub id: String,
     pub identifier: String,
+    pub line_no: usize,
 }
 
 impl Display for Item {
