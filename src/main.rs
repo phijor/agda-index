@@ -8,8 +8,9 @@ mod output;
 mod pipeline;
 
 use anyhow::Result;
-use cmdline::OutputFormat;
+use cmdline::{CommandLine, OutputFormat};
 
+use crate::output::DocsetOutput;
 use crate::output::JsonOutput;
 use crate::output::{OutputWriter, PlainOutput};
 use crate::pipeline::Pipeline;
@@ -20,11 +21,11 @@ struct ItemInfo {
     module: String,
 }
 
-fn get_output_writer(format: OutputFormat) -> Result<Box<dyn OutputWriter>> {
+fn get_output_writer(cmdline: &CommandLine) -> Result<Box<dyn OutputWriter>> {
     let stdout = std::io::stdout();
     let stdout = stdout.lock();
 
-    match format {
+    match cmdline.output_format {
         OutputFormat::Plain => {
             let plain = PlainOutput::new(stdout);
             Ok(Box::new(plain))
@@ -33,11 +34,21 @@ fn get_output_writer(format: OutputFormat) -> Result<Box<dyn OutputWriter>> {
             let json = JsonOutput::new(stdout);
             Ok(Box::new(json))
         }
+        OutputFormat::Docset => {
+            let docset = DocsetOutput::new(
+                cmdline.library_name.clone(),
+                std::env::current_dir()?,
+                cmdline.html_dir.clone(),
+            );
+            Ok(Box::new(docset))
+        }
     }
 }
 
 fn main() -> Result<()> {
     let cmdline = cmdline::parse();
+
+    let mut output = get_output_writer(&cmdline)?;
 
     let pipeline = {
         let pipeline = Pipeline::new();
@@ -61,8 +72,6 @@ fn main() -> Result<()> {
 
         pipeline
     };
-
-    let mut output = get_output_writer(cmdline.output_format)?;
 
     output.write_output(pipeline.consume())
 }

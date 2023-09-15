@@ -9,8 +9,13 @@ pub struct CommandLine {
     /// textual format of the finished index.
     /// Either
     /// "plain" (space-separated plaintext, default),
-    /// "json" (JSON dictionary {{<source file>: <module items>}})
+    /// "json" (JSON dictionary {{<source file>: <module items>}}), or
+    /// "docset" (a Dash Docset)
     pub output_format: OutputFormat,
+
+    #[argh(option, default = r#"("agda".into())"#)]
+    /// name of the Agda library (field `name` in .agda-lib)
+    pub library_name: String,
 
     #[argh(positional)]
     /// paths to directory containing HTML files of rendered Agda modules
@@ -21,6 +26,7 @@ pub struct CommandLine {
 pub enum OutputFormat {
     Plain,
     Json,
+    Docset,
 }
 
 impl FromStr for OutputFormat {
@@ -30,7 +36,8 @@ impl FromStr for OutputFormat {
         match fmt {
             "plain" => Ok(Self::Plain),
             "json" => Ok(Self::Json),
-            _ => Err("expected one of 'plain' or 'json'"),
+            "docset" => Ok(Self::Docset),
+            _ => Err("expected one of 'plain', 'json' or 'docset'"),
         }
     }
 }
