@@ -13,8 +13,8 @@ pub struct CommandLine {
     pub output_format: OutputFormat,
 
     #[argh(positional)]
-    /// paths to HTML files containing a rendered Agda modules
-    pub module_paths: Vec<PathBuf>,
+    /// paths to directory containing HTML files of rendered Agda modules
+    pub html_dir: PathBuf,
 }
 
 #[derive(Debug, Clone, Copy)]

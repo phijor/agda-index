@@ -42,10 +42,22 @@ fn main() -> Result<()> {
     let pipeline = {
         let pipeline = Pipeline::new();
 
-        cmdline
-            .module_paths
-            .into_iter()
-            .for_each(|path| pipeline.process_module(path));
+        let html_dir = &cmdline.html_dir;
+
+        let module_paths = std::fs::read_dir(html_dir)?;
+
+        module_paths.into_iter().for_each(|entry| match entry {
+            Ok(entry) => {
+                let path = entry.path();
+                if path.extension().is_some_and(|ext| ext == "html") {
+                    pipeline.process_module(path);
+                } else {
+                    eprintln!("Skipping non-HTML file {}", path.display());
+                }
+            }
+
+            Err(err) => eprintln!("Failed to read entry from {}: {err}", html_dir.display()),
+        });
 
         pipeline
     };
