@@ -1,44 +1,36 @@
 {
   inputs = {
-    cargo2nix.url = "github:cargo2nix/cargo2nix/unstable";
-    flake-utils.follows = "cargo2nix/flake-utils";
-    nixpkgs.follows = "cargo2nix/nixpkgs";
+    nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
+    flake-utils.url = "github:numtide/flake-utils";
   };
 
-  outputs = inputs:
+  outputs =
+    inputs:
     with inputs;
-      flake-utils.lib.eachDefaultSystem
-      (
-        system: let
-          pkgs = import nixpkgs {
-            inherit system;
-            overlays = [cargo2nix.overlays.default];
-          };
+    flake-utils.lib.eachDefaultSystem (
+      system:
+      let
+        pkgs = nixpkgs.legacyPackages.${system};
 
-          rustPkgs = pkgs.rustBuilder.makePackageSet {
-            rustVersion = "1.66.1";
-            packageFun = import ./Cargo.nix;
-            extraRustComponents = ["rust-analyzer" "clippy"];
-          };
-          agda-index = (rustPkgs.workspace.agda-index {}).bin;
-        in rec {
-          packages = {
-            inherit agda-index;
-            default = packages.agda-index;
-          };
+        cargoNix = pkgs.callPackage ./Cargo.nix { inherit pkgs; };
+        agda-index = cargoNix.rootCrate.build;
+      in
+      rec {
+        packages = {
+          inherit agda-index;
+          default = packages.agda-index;
+        };
 
-          devShells.default = rustPkgs.workspaceShell {};
-          devShells.bootstrap = pkgs.mkShell {
-            buildInputs = [cargo2nix.packages.${system}.cargo2nix];
-          };
+        devShells.default = pkgs.mkShell { inputsFrom = [ packages.default ]; };
+        devShells.bootstrap = pkgs.mkShell { buildInputs = [ pkgs.crate2nix ]; };
 
-          apps = {
-            agda-index = {
-              type = "app";
-              program = "${agda-index}/bin/agda-index";
-            };
-            default = apps.agda-index;
+        apps = {
+          agda-index = {
+            type = "app";
+            program = "${agda-index}/bin/agda-index";
           };
-        }
-      );
+          default = apps.agda-index;
+        };
+      }
+    );
 }
