@@ -17,6 +17,10 @@ pub struct CommandLine {
     /// name of the Agda library (field `name` in .agda-lib)
     pub library_name: String,
 
+    #[argh(option, default = r#"("index.html".into())"#)]
+    /// path to the main page, relative to <html_dir> (default: index.html)
+    pub main_page: PathBuf,
+
     #[argh(positional)]
     /// paths to directory containing HTML files of rendered Agda modules
     pub html_dir: PathBuf,

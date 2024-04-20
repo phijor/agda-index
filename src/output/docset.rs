@@ -16,14 +16,21 @@ pub struct DocsetOutput {
     name: String,
     output_directory: PathBuf,
     input_directory: PathBuf,
+    main_page: PathBuf,
 }
 
 impl DocsetOutput {
-    pub fn new(name: String, output_directory: PathBuf, input_directory: PathBuf) -> Self {
+    pub fn new(
+        name: String,
+        output_directory: PathBuf,
+        input_directory: PathBuf,
+        main_page: PathBuf,
+    ) -> Self {
         Self {
             name,
             output_directory,
             input_directory,
+            main_page,
         }
     }
 
@@ -77,10 +84,13 @@ impl DocsetOutput {
                     <string>{name}</string>
                     <key>isDashDocset</key>
                     <true/>
+                    <key>dashIndexFilePath</key>
+                    <string>{index_file_path}</string>
                 </dict>
                 </plist>
             "#,
             name = self.name,
+            index_file_path = self.main_page.display(),
         )?;
         Ok(())
     }

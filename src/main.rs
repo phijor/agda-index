@@ -39,6 +39,7 @@ fn get_output_writer(cmdline: &CommandLine) -> Result<Box<dyn OutputWriter>> {
                 cmdline.library_name.clone(),
                 std::env::current_dir()?,
                 cmdline.html_dir.clone(),
+                cmdline.main_page.clone(),
             );
             Ok(Box::new(docset))
         }
