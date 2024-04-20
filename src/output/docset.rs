@@ -95,6 +95,16 @@ impl DocsetOutput {
         Ok(())
     }
 
+    fn write_icon(&self) -> Result<()> {
+        const AGDA_SVG: &'static [u8] = include_bytes!("../../resources/Agda.svg");
+
+        let icon_path = self.docset_dir().join("icon.svg");
+
+        eprintln!("Writing Docset icon to '{}'", icon_path.display());
+        std::fs::write(&icon_path, AGDA_SVG)
+            .with_context(|| format!("Failed to write Docset icon to '{}'", icon_path.display()))
+    }
+
     fn index_database(&mut self) -> Result<IndexDatabase> {
         IndexDatabase::new(self.index_database_path(), &self.input_directory)
     }
@@ -219,6 +229,7 @@ impl OutputWriter for DocsetOutput {
             .context("Failed to create Docset skeleton")?;
         self.write_metadata()
             .context("Failed to write Docset metadata")?;
+        self.write_icon().context("Failed to write Docset icon")?;
 
         let mut db = self
             .index_database()

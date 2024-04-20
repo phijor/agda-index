@@ -19,5 +19,7 @@ agda-index html/*.html | fzf -d' ' --with-nth='2' | cut -d' ' -f1 | xargs firefo
 
 ## Licence
 
-The project subject to the terms of the Mozilla Public License, v. 2.0,
+This project is subject to the terms of the Mozilla Public License, v. 2.0,
 see [LICENSE](./LICENSE).
+The [Agda icon](./resources/Agda.svg) has been adapted from the official
+Agda logo, and is distributed under the terms of the [Agda license](./resources/LICENSE-Agda.txt).
