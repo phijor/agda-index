@@ -204,7 +204,7 @@ impl OutputWriter for IndexDatabase {
 
                 insert_item.execute(params![module_name, "Module", module_path])?;
 
-                for Item { id, identifier } in items {
+                for Item { id, identifier, classes } in items {
                     let fqn = format!("{module_name}.{identifier}");
                     insert_item
                         .execute(params![

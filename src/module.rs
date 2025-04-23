@@ -8,7 +8,7 @@ use std::{
 };
 
 use anyhow::{Context, Result};
-use scraper::{ElementRef, Html, Selector};
+use scraper::{ElementRef, Html, Selector, Element};
 use serde::Serialize;
 use url::{self, Url};
 
@@ -68,6 +68,7 @@ impl ModuleParser {
     ) -> Result<Option<Item>> {
         let identifier = item.text().next().context("Missing text")?;
         let element = item.value();
+        let classes = element.classes().collect();
         let id = element.id().context("Missing ID")?;
         let target_url = match element.attr("href") {
             Some(href) => url_parser.parse(href).context("Invalid link target")?,
@@ -81,6 +82,7 @@ impl ModuleParser {
                 return Ok(Some(Item {
                     id: id.into(),
                     identifier: identifier.into(),
+                    classes,
                 }));
             }
         };
@@ -91,6 +93,7 @@ impl ModuleParser {
             Some(Item {
                 id: id.into(),
                 identifier: identifier.into(),
+                classes,
             })
         } else {
             None
@@ -128,6 +131,7 @@ impl ModuleParser {
 pub struct Item {
     pub id: String,
     pub identifier: String,
+    pub classes: Vec<String>,
 }
 
 impl Display for Item {
