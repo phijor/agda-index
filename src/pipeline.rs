@@ -32,11 +32,11 @@ impl Pipeline {
 
     pub fn process_module(&self, source_path: PathBuf) {
         let tx = self.tx.clone();
-        self.pool.execute(move || {
-            if let Err(err) = process_module(source_path, tx) {
-                eprintln!("Failed to process module: {err}")
-            }
-        });
+        self.pool
+            .execute(move || match process_module(source_path) {
+                Err(err) => eprintln!("Failed to process module: {err}"),
+                Ok(item) => tx.send(item).context("Failed to send result for module")?,
+            });
     }
 
     pub fn consume(self) -> Output {
@@ -44,7 +44,7 @@ impl Pipeline {
     }
 }
 
-fn process_module(source_path: PathBuf, result: mpsc::Sender<Item>) -> Result<()> {
+fn process_module(source_path: PathBuf) -> Result<Item> {
     let parser = ModuleParser::new();
 
     let content = std::fs::read_to_string(&source_path)
@@ -53,14 +53,10 @@ fn process_module(source_path: PathBuf, result: mpsc::Sender<Item>) -> Result<()
         .parse_module(&content)
         .with_context(|| format!("Failed to parse module {}", source_path.display()))?;
 
-    result
-        .send(Item {
-            source_path,
-            module,
-        })
-        .context("Failed to send result")?;
-
-    Ok(())
+    Ok(Item {
+        source_path,
+        module,
+    })
 }
 
 pub struct Output {
