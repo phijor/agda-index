@@ -68,7 +68,7 @@ impl ModuleParser {
     ) -> Result<Option<Item>> {
         let identifier = item.text().next().context("Missing text")?;
         let element = item.value();
-        let classes = element.classes().collect();
+        let classes = element.classes().map(|class| class.to_owned()).collect();
         let id = element.id().context("Missing ID")?;
         let target_url = match element.attr("href") {
             Some(href) => url_parser.parse(href).context("Invalid link target")?,
