@@ -35,7 +35,7 @@ impl Pipeline {
         self.pool
             .execute(move || match process_module(source_path) {
                 Err(err) => eprintln!("Failed to process module: {err}"),
-                Ok(item) => tx.send(item).context("Failed to send result for module")?,
+                Ok(item) => tx.send(item).expect("Failed to send result for module"),
             });
     }
 
